@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> UPC connect Admin Tableau de bord WiFi</title>
+  <link rel="icon" href="assets/img icon.png">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f4f5f7;
+      min-height: 100vh;
+      color: #111;
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    #logo{
+      width:32px;
+      height:32px;
+      margin-right:8px;
+    }
+
+    header h1 { font-size: 16px; font-weight: 600; }
+    header span { font-size: 13px; color: #666; }
+
+    nav {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0 1.5rem;
+      display: flex;
+      gap: 0;
+    }
+
+    .nav-link {
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #666;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all .15s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-family: inherit;
+    }
+
+    .nav-link:hover { color: #1a56db; }
+    .nav-link.active { color: #1a56db; border-bottom-color: #1a56db; }
+
+    main { padding: 1.5rem; max-width: 960px; margin: 0 auto; }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid #e5e7eb;
+    }
+
+    .stat-card .label { font-size: 12px; color: #888; margin-bottom: 6px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; color: #111; }
+    .stat-card .sub { font-size: 12px; color: #10b981; margin-top: 4px; }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #111;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left;
+      font-weight: 500;
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 6px 10px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    td {
+      padding: 10px 10px;
+      border-bottom: 1px solid #f7f7f7;
+      color: #333;
+    }
+    tr:last-child td { border-bottom: none; }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .badge-green { background: #ecfdf5; color: #065f46; }
+    .badge-blue { background: #eff6ff; color: #1e40af; }
+    .badge-gray { background: #f3f4f6; color: #374151; }
+
+    .code {
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+      letter-spacing: 1px;
+      font-size: 13px;
+    }
+
+    /* Coupons view */
+    .gen-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 1rem;
+    }
+
+    .gen-form label { font-size: 12px; color: #555; font-weight: 500; display: block; margin-bottom: 4px; }
+
+    input[type="number"],
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 9px 12px;
+      font-size: 13px;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color .15s;
+    }
+
+    input:focus, select:focus { border-color: #1a56db; }
+
+    .gen-btn {
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      background: #1a56db;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: background .15s;
+    }
+    .gen-btn:hover { background: #1447b3; }
+
+    .coupon-row {
+      display: grid;
+      grid-template-columns: 90px 50px 90px 110px 90px auto;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid #f0f0f0;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    .coupon-row:hover { background: #fafafa; }
+
+    .copy-btn {
+      padding: 4px 10px;
+      font-size: 11px;
+      border: 1px solid #ddd;
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #555;
+      font-family: inherit;
+      transition: all .15s;
+    }
+    .copy-btn:hover { background: #f0f0f0; }
+
+    @media (max-width: 900px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .gen-form { grid-template-columns: 1fr 1fr auto; }
+    }
+
+    @media (max-width: 720px) {
+      header {
+        flex-wrap: wrap;
+        justify-content: center;
+        height: auto;
+        padding: 1rem;
+        text-align: center;
+      }
+      header h1, header span { width: 100%; }
+      nav { flex-wrap: wrap; justify-content: center; }
+      .nav-link { flex: 1 1 calc(50% - 10px); text-align: center; margin: 4px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .gen-form { grid-template-columns: 1fr; gap: 1rem; }
+      .coupon-row { display: flex; flex-wrap: wrap; align-items: center; }
+      .coupon-row > * { flex: 1 1 45%; min-width: 120px; }
+      .coupon-row button { flex: 1 1 100%; margin-top: 8px; }
+      .card { padding: 1rem; }
+      main { padding: 1rem; }
+      .badge { white-space: normal; }
+    }
+
+    @media (max-width: 520px) {
+      .nav-link { flex: 1 1 100%; }
+      .coupon-row > * { min-width: 100%; }
+      .coupon-row button { margin-top: 8px; }
+      .stats-grid { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img id="logo" src="assets/img icon.png" alt="wifi icon">
+    <h1>WiFi Admin</h1>
+    <span>Tableau de bord</span>
+  </header>
+
+  <nav>
+    <button class="nav-link active" onclick="switchTab('dashboard', this)">Dashboard</button>
+    <button class="nav-link" onclick="switchTab('coupons', this)">Coupons</button>
+    <button class="nav-link" onclick="switchTab('sessions', this)">Sessions actives</button>
+  </nav>
+
+  <main>
+
+    <!-- Dashboard -->
+    <div id="view-dashboard" class="view active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="label">Coupons vendus</div>
+          <div class="value" id="s-total">18</div>
+          <div class="sub">↑ +3 aujourd'hui</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Utilisateurs actifs</div>
+          <div class="value" id="s-active">5</div>
+          <div class="sub">En ce moment</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Revenus</div>
+          <div class="value" id="s-revenue">36,00$</div>
+          <div class="sub">↑ +6,00$ aujourd'hui</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Historique des ventes</div>
+        <table>
+          <thead>
+            <tr><th>Coupon</th><th>Paiement</th><th>Montant</th><th>Heure</th><th>Statut</th></tr>
+          </thead>
+          <tbody id="history-tbody">
+            <tr><td class="code">WIFI-A3K9</td><td>Mobile money</td><td>2,05$</td><td>07:50</td><td><span class="badge badge-blue">Utilisé</span></td></tr>
+            <tr><td class="code">WIFI-G1X4</td><td>Carte</td><td>2,05$</td><td>08:03</td><td><span class="badge badge-blue">Utilisé</span></td></tr>
+            <tr><td class="code">WIFI-H8J2</td><td>Mobile money</td><td>2,05$</td><td>08:55</td><td><span class="badge badge-blue">Utilisé</span></td></tr>
+            <tr><td class="code">WIFI-K6N5</td><td>Carte</td><td>2,05$</td><td>09:10</td><td><span class="badge badge-blue">Utilisé</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="card" style="margin-top:12px">
+        <div class="card-title">Appareils récemment connectés</div>
+        <div style="font-size:12px;color:#888;margin-bottom:10px">Mises à jour en temps réel depuis le portail</div>
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Coupon</th><th>Agent</th><th>Heure</th></tr>
+          </thead>
+          <tbody id="devices-tbody">
+            <!-- remplie par JS -->
+          </tbody>
+        </table>
+        <div style="margin-top:8px;text-align:right">
+          <button class="copy-btn" onclick="clearDevices()">Vider</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coupons -->
+    <div id="view-coupons" class="view">
+      <div class="card">
+        <div class="card-title">Générer des coupons</div>
+        <div class="gen-form">
+          <div>
+            <label>Tarif</label>
+            <input type="text" value="2,05$ 9 mois, 2 appareils" disabled style="background:#f9f9f9;color:#888">
+          </div>
+          <div>
+            <label>Quantité</label>
+            <input type="number" id="gen-qty" value="5" min="1" max="100">
+          </div>
+          <button class="gen-btn" onclick="generateCoupons()">+ Générer</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Coupons disponibles</div>
+        <div style="font-size:12px;color:#888;margin-bottom:10px">Chaque coupon est valable 9 mois et utilisable sur jusqu'à 2 appareils</div>
+        <div id="coupon-list">
+          <div class="coupon-row">
+            <span class="code">WIFI-H8J2</span>
+            <span>2,05$</span>
+            <span style="color:#888">0/2 appareils</span>
+            <span style="color:#888">Expire : 21/03/2027</span>
+            <span><span class="badge badge-green">Disponible</span></span>
+            <button class="copy-btn" onclick="copyCode('WIFI-H8J2', this)">Copier</button>
+          </div>
+          <div class="coupon-row">
+            <span class="code">WIFI-K6N5</span>
+            <span>2,05$</span>
+            <span style="color:#888">0/2 appareils</span>
+            <span style="color:#888">Expire : 21/03/2027</span>
+            <span><span class="badge badge-green">Disponible</span></span>
+            <button class="copy-btn" onclick="copyCode('WIFI-K6N5', this)">Copier</button>
+          </div>
+          <div class="coupon-row">
+            <span class="code">WIFI-L4Q7</span>
+            <span>2,05$</span>
+            <span style="color:#888">1/2 appareils</span>
+            <span style="color:#888">Expire : 21/03/2027</span>
+            <span><span class="badge badge-blue">En cours</span></span>
+            <button class="copy-btn" onclick="copyCode('WIFI-L4Q7', this)">Copier</button>
+          </div>
+          <div class="coupon-row">
+            <span class="code">WIFI-M2W9</span>
+            <span>2,05$</span>
+            <span style="color:#888">0/2 appareils</span>
+            <span style="color:#888">Expire : 21/03/2027</span>
+            <span><span class="badge badge-green">Disponible</span></span>
+            <button class="copy-btn" onclick="copyCode('WIFI-M2W9', this)">Copier</button>
+          </div>
+          <div class="coupon-row">
+            <span class="code">WIFI-A3K9</span>
+            <span>2,05$</span>
+            <span style="color:#888">2/2 appareils</span>
+            <span style="color:#888">Expire : 21/03/2027</span>
+            <span><span class="badge badge-gray">Épuisé</span></span>
+            <button class="copy-btn" onclick="copyCode('WIFI-A3K9', this)">Copier</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sessions -->
+    <div id="view-sessions" class="view">
+      <div class="card">
+        <div class="card-title">Utilisateurs connectés en ce moment</div>
+        <table>
+          <thead>
+            <tr><th>IP</th><th>Coupon</th><th>Paiement</th><th>Connecté depuis</th><th>Statut</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>192.168.1.12</td><td class="code">WIFI-B4K2</td><td>Mobile</td><td>08:14</td><td><span class="badge badge-green">Actif</span></td></tr>
+            <tr><td>192.168.1.19</td><td class="code">WIFI-C9P1</td><td>Carte</td><td>09:32</td><td><span class="badge badge-green">Actif</span></td></tr>
+            <tr><td>192.168.1.25</td><td class="code">WIFI-D7M8</td><td>Mobile</td><td>10:05</td><td><span class="badge badge-green">Actif</span></td></tr>
+            <tr><td>192.168.1.31</td><td class="code">WIFI-E2T6</td><td>Carte</td><td>11:47</td><td><span class="badge badge-green">Actif</span></td></tr>
+            <tr><td>192.168.1.44</td><td class="code">WIFI-F5R3</td><td>Mobile</td><td>12:20</td><td><span class="badge badge-green">Actif</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    function switchTab(t, btn) {
+      document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('view-' + t).classList.add('active');
+    }
+
+    function generateCoupons() {
+      const qty = Math.min(parseInt(document.getElementById('gen-qty').value) || 1, 100);
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      const list = document.getElementById('coupon-list');
+
+      // Date d'expiration : aujourd'hui + 9 mois
+      const expiry = new Date();
+      expiry.setMonth(expiry.getMonth() + 9);
+      const expiryStr = expiry.toLocaleDateString('fr-FR');
+
+      for (let i = 0; i < qty; i++) {
+        let code = 'WIFI-';
+        for (let j = 0; j < 4; j++) code += chars[Math.floor(Math.random() * chars.length)];
+
+        const row = document.createElement('div');
+        row.className = 'coupon-row';
+        row.innerHTML = `
+          <span class="code">${code}</span>
+          <span>2,05$</span>
+          <span style="color:#888">0/2 appareils</span>
+          <span style="color:#888">Expire : ${expiryStr}</span>
+          <span><span class="badge badge-green">Disponible</span></span>
+          <button class="copy-btn" onclick="copyCode('${code}', this)">Copier</button>
+        `;
+        list.prepend(row);
+      }
+
+      const total = parseInt(document.getElementById('s-total').textContent) + qty;
+      document.getElementById('s-total').textContent = total;
+    }
+
+    function copyCode(code, btn) {
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copié !';
+        setTimeout(() => btn.textContent = 'Copier', 1500);
+      }).catch(() => {
+        btn.textContent = code;
+      });
+    }
+
+    // Real-time device updates via BroadcastChannel
+    const bc = new BroadcastChannel('wifi-dashboard');
+    function addDevice(device) {
+      const tbody = document.getElementById('devices-tbody');
+      const tr = document.createElement('tr');
+      const time = new Date(device.time).toLocaleString();
+      tr.innerHTML = `
+        <td class="code">${device.id}</td>
+        <td>${device.coupon || ''}</td>
+        <td style="font-size:12px;color:#666">${device.ua || ''}</td>
+        <td>${time}</td>
+      `;
+      tbody.prepend(tr);
+      // Update active users stat if present
+      const sActive = document.getElementById('s-active');
+      if (sActive) sActive.textContent = parseInt(sActive.textContent || '0') + 1;
+    }
+
+    function updateCouponUsage(couponCode) {
+      const rows = document.querySelectorAll('#coupon-list .coupon-row');
+      rows.forEach(row => {
+        const codeElem = row.querySelector('.code');
+        if (!codeElem || codeElem.textContent.trim() !== couponCode) return;
+        const usageEl = row.children[2];
+        const badgeEl = row.querySelector('.badge');
+        const usageText = usageEl.textContent.trim();
+        const [usedStr, maxStr] = usageText.split(' ')[0].split('/');
+        const used = Math.min(parseInt(usedStr, 10) + 1, parseInt(maxStr, 10) || 2);
+        const max = parseInt(maxStr, 10) || 2;
+        usageEl.textContent = `${used}/${max} appareils`;
+        if (used >= max) {
+          badgeEl.textContent = 'Épuisé';
+          badgeEl.className = 'badge badge-gray';
+        } else {
+          badgeEl.textContent = 'En cours';
+          badgeEl.className = 'badge badge-blue';
+        }
+      });
+    }
+
+    function clearDevices() {
+      document.getElementById('devices-tbody').innerHTML = '';
+      const sActive = document.getElementById('s-active');
+      if (sActive) sActive.textContent = '0';
+    }
+
+    bc.addEventListener('message', ev => {
+      const data = ev.data;
+      if (!data || data.type !== 'connect') return;
+      const payload = data.payload || data;
+      addDevice(payload);
+      if (payload.coupon) updateCouponUsage(payload.coupon);
+    });
+  </script>
+</body>
+</html>
